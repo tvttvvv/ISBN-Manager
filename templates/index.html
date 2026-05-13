@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도서 콘텐츠 자동 생성기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-6">ISBN 도서 콘텐츠 관리자</h1>
+        
+        <!-- ISBN 입력부 -->
+        <div class="flex gap-4 mb-8">
+            <input type="text" id="isbnInput" placeholder="ISBN 13자리를 입력하세요" class="flex-1 border p-2 rounded">
+            <button onclick="fetchBook()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">도서정보 불러오기</button>
+        </div>
+
+        <!-- 도서 정보 확인부 -->
+        <div id="bookDetail" class="hidden mb-8 p-4 border rounded bg-gray-50">
+            <h2 id="bookTitle" class="text-xl font-semibold"></h2>
+            <p id="bookMeta" class="text-gray-600"></p>
+            <button onclick="generateAll()" class="mt-4 bg-green-600 text-white px-6 py-2 rounded">전체 콘텐츠 생성하기</button>
+        </div>
+
+        <!-- 결과 탭 메뉴 -->
+        <div class="mb-4 border-b">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
+                <li class="mr-2"><button onclick="showTab('smartstore')" class="inline-block p-4 border-b-2 border-blue-600">스마트스토어</button></li>
+                <li class="mr-2"><button onclick="showTab('blog')" class="inline-block p-4">블로그</button></li>
+                <li class="mr-2"><button onclick="showTab('cafe')" class="inline-block p-4">카페</button></li>
+            </ul>
+        </div>
+
+        <!-- 결과창 -->
+        <div id="contentResult" class="p-4 border rounded min-h-[200px] whitespace-pre-wrap bg-gray-50">
+            결과가 여기에 표시됩니다.
+        </div>
+        <button onclick="copyContent()" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">복사하기</button>
+    </div>
+
+    <script>
+        let currentBook = null;
+        let results = { smartstore: '', blog: '', cafe: '' };
+
+        async function fetchBook() {
+            const isbn = document.getElementById('isbnInput').value;
+            const res = await fetch('/fetch_book', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({isbn})
+            });
+            const result = await res.json();
+            if (result.success) {
+                currentBook = result.data;
+                document.getElementById('bookDetail').classList.remove('hidden');
+                document.getElementById('bookTitle').innerText = currentBook.title;
+                document.getElementById('bookMeta').innerText = `${currentBook.author} | ${currentBook.publisher}`;
+            } else {
+                alert(result.message);
+            }
+        }
+
+        async function generateAll() {
+            const targets = ['smartstore', 'blog', 'cafe'];
+            document.getElementById('contentResult').innerText = "콘텐츠 생성 중...";
+            
+            for (const target of targets) {
+                const res = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({book_info: currentBook, target: target})
+                });
+                const result = await res.json();
+                results[target] = result.content;
+            }
+            showTab('smartstore');
+        }
+
+        function showTab(target) {
+            document.getElementById('contentResult').innerText = results[target] || "아직 생성된 내용이 없습니다.";
+        }
+
+        function copyContent() {
+            const content = document.getElementById('contentResult').innerText;
+            navigator.clipboard.writeText(content);
+            alert("복사되었습니다!");
+        }
+    </script>
+</body>
+</html>
