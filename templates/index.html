@@ -4,173 +4,463 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>도서 콘텐츠 통합 관리자</title>
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
-    <link href="[https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap)" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Pretendard', sans-serif; background-color: #f4f6f8; color: #333; margin: 0; }
-        
-        /* 스크롤바 커스텀 */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        * { font-family: 'Pretendard', sans-serif; }
+        body { background-color: #f1f5f9; color: #0f172a; margin: 0; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* 사이드바 메뉴 활성화 효과 */
-        .menu-active { background-color: #1e232b; border-left: 4px solid #00c6ff; color: #ffffff !important; }
-        .menu-item { border-left: 4px solid transparent; }
+
+        /* Sidebar */
+        .sidebar { background: #0f172a; }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin: 2px 8px;
+            color: #94a3b8;
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .menu-item:hover { background: rgba(255,255,255,0.06); color: #e2e8f0; }
+        .menu-item.menu-active { background: #6366f1; color: #fff; box-shadow: 0 4px 12px rgba(99,102,241,0.35); }
+        .menu-item .icon { width: 18px; text-align: center; }
+        .menu-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: #475569;
+            padding: 16px 22px 6px;
+            text-transform: uppercase;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        /* Inputs */
+        .input-field {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 9px 13px;
+            font-size: 13.5px;
+            color: #0f172a;
+            background: #f8fafc;
+            outline: none;
+            width: 100%;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        .input-field:focus {
+            border-color: #6366f1;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            font-weight: 700;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13.5px;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: white;
+            color: #475569;
+            font-weight: 600;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 12.5px;
+        }
+        .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
+        .btn-icon {
+            background: #0f172a;
+            color: white;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            padding: 9px 14px;
+            transition: all 0.15s;
+        }
+        .btn-icon:hover { background: #1e293b; }
+
+        /* Tabs */
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #94a3b8;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+        }
+        .tab-btn:hover { color: #64748b; background: #f8fafc; }
+        .tab-btn.tab-active { color: #6366f1; border-bottom-color: #6366f1; background: white; }
+
+        /* Channel checkboxes */
+        .channel-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: #f8fafc;
+        }
+        .channel-card:hover { border-color: #a5b4fc; background: #eef2ff; }
+        .channel-card input:checked + span { color: #4f46e5; font-weight: 600; }
+        .channel-card:has(input:checked) { border-color: #a5b4fc; background: #eef2ff; }
+
+        /* Table */
+        .data-table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 12px 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .data-table td {
+            padding: 13px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tbody tr:hover td { background: #f8fafc; }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 18px;
+            border-radius: 12px;
+            font-size: 13.5px;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            animation: slideIn 0.25s ease;
+            max-width: 320px;
+        }
+        .toast-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .toast-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .toast-info { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 99px;
+        }
+        .badge-store { background: #ede9fe; color: #5b21b6; }
+        .badge-blog { background: #dcfce7; color: #166534; }
+        .badge-cafe { background: #fff7ed; color: #92400e; }
+
+        /* Confirmed badge */
+        .tag-confirmed {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 99px;
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden antialiased">
-    
-    <aside class="w-[240px] bg-[#2b303b] text-[#9ca3af] flex flex-col flex-shrink-0 z-20 shadow-xl">
-        <div class="h-16 flex items-center px-6 border-b border-[#3b414f] mb-4">
-            <i class="fa-solid fa-book-open text-white mr-3"></i>
-            <h1 class="text-white font-bold text-lg tracking-wide">콘텐츠 툴킷</h1>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar w-[220px] flex flex-col flex-shrink-0 z-20">
+        <!-- Logo -->
+        <div class="flex items-center gap-3 px-5 py-5 border-b border-white/5">
+            <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-book-open text-white text-sm"></i>
+            </div>
+            <div>
+                <div class="text-white font-bold text-sm leading-tight">콘텐츠 툴킷</div>
+                <div class="text-slate-500 text-[10px]">Admin Dashboard</div>
+            </div>
         </div>
 
-        <nav class="flex-1 overflow-y-auto px-0 space-y-1">
-            <div class="px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#6b7280]">작업 관리</div>
-            
-            <a href="#" onclick="switchPage('generate', this)" class="menu-item menu-active flex items-center px-6 py-3.5 hover:bg-[#1e232b] hover:text-white transition-colors cursor-pointer text-sm">
-                <i class="fa-solid fa-pen-to-square w-6"></i>
+        <!-- Nav -->
+        <nav class="flex-1 overflow-y-auto py-3">
+            <div class="menu-section-label">작업 관리</div>
+
+            <a href="#" onclick="switchPage('generate', this)" class="menu-item menu-active">
+                <i class="fa-solid fa-pen-to-square icon"></i>
                 <span>콘텐츠 생성</span>
             </a>
-            
-            <a href="#" onclick="switchPage('history', this)" class="menu-item flex items-center px-6 py-3.5 hover:bg-[#1e232b] hover:text-white transition-colors cursor-pointer text-sm">
-                <i class="fa-solid fa-chart-line w-6"></i>
-                <span>DB 기록 (모니터링)</span>
+
+            <a href="#" onclick="switchPage('history', this)" class="menu-item">
+                <i class="fa-solid fa-database icon"></i>
+                <span>DB 기록</span>
             </a>
 
-            <div class="px-6 py-3 mt-4 text-xs font-bold uppercase tracking-wider text-[#6b7280]">환경 설정</div>
-            
-            <a href="#" onclick="switchPage('settings', this)" class="menu-item flex items-center px-6 py-3.5 hover:bg-[#1e232b] hover:text-white transition-colors cursor-pointer text-sm">
-                <i class="fa-solid fa-key w-6"></i>
+            <div class="menu-section-label mt-2">환경 설정</div>
+
+            <a href="#" onclick="switchPage('settings', this)" class="menu-item">
+                <i class="fa-solid fa-key icon"></i>
                 <span>암호 변경</span>
             </a>
-            
-            <a href="/logout" class="menu-item flex items-center px-6 py-3.5 hover:bg-[#1e232b] hover:text-white transition-colors cursor-pointer text-sm mt-auto">
-                <i class="fa-solid fa-arrow-right-from-bracket w-6"></i>
+
+            <a href="/logout" class="menu-item" style="margin-top: 4px;">
+                <i class="fa-solid fa-arrow-right-from-bracket icon"></i>
                 <span>로그아웃</span>
             </a>
         </nav>
-        
-        <div class="p-4 border-t border-[#3b414f] text-xs text-center text-[#6b7280]">
-            Admin: {{ username }}
+
+        <!-- User Info -->
+        <div class="px-5 py-4 border-t border-white/5 flex items-center gap-3">
+            <div class="w-7 h-7 bg-indigo-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-user text-indigo-400 text-xs"></i>
+            </div>
+            <div>
+                <div class="text-slate-300 text-xs font-semibold">{{ username }}</div>
+                <div class="text-slate-500 text-[10px]">Administrator</div>
+            </div>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-full overflow-hidden bg-[#f4f6f9]">
-        
-        <header class="h-16 bg-white border-b border-gray-200 flex items-center px-8 shadow-sm flex-shrink-0 z-10">
-            <h2 id="pageTitle" class="text-xl font-bold text-[#00c6ff]">스마트 도서 콘텐츠 생성</h2>
+    <!-- Main -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
+
+        <!-- Header -->
+        <header class="h-14 bg-white border-b border-slate-100 flex items-center px-7 flex-shrink-0 z-10">
+            <div class="flex items-center gap-2 text-slate-400 text-xs">
+                <i class="fa-solid fa-house text-slate-300"></i>
+                <span>/</span>
+                <span id="breadcrumb" class="text-slate-700 font-semibold">콘텐츠 생성</span>
+            </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8 relative">
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-6 relative">
 
-            <div id="page-generate" class="page-section grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
-                <div class="lg:col-span-4 flex flex-col gap-6">
-                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                        <h3 class="text-sm font-bold text-gray-700 mb-3"><i class="fa-solid fa-magnifying-glass mr-2"></i>도서 정보 불러오기</h3>
-                        <div class="flex gap-2">
-                            <input type="text" id="isbnInput" placeholder="ISBN 입력 (13자리)" class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:border-[#00c6ff] focus:outline-none focus:ring-1 focus:ring-[#00c6ff]">
-                            <button onclick="fetchBook()" class="bg-[#2b303b] text-white px-4 py-2 rounded text-sm hover:bg-[#1f232b] font-bold"><i class="fa-solid fa-download"></i></button>
+            <!-- Page: Generate -->
+            <div id="page-generate" class="page-section grid grid-cols-1 lg:grid-cols-12 gap-5 h-full">
+
+                <!-- Left Panel -->
+                <div class="lg:col-span-4 flex flex-col gap-5">
+
+                    <!-- ISBN Search -->
+                    <div class="card p-5">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-7 h-7 bg-slate-100 rounded-lg flex items-center justify-center">
+                                <i class="fa-solid fa-magnifying-glass text-slate-500 text-xs"></i>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-700">도서 정보 불러오기</h3>
                         </div>
-                        
-                        <div id="bookDetail" class="hidden mt-4 p-4 bg-gray-50 border border-gray-200 rounded">
-                            <span class="inline-block bg-[#00c6ff] text-white text-[10px] font-bold px-2 py-0.5 rounded mb-1">확인됨</span>
-                            <h4 id="bookTitle" class="font-bold text-gray-800 text-sm leading-tight"></h4>
-                            <p id="bookMeta" class="text-xs text-gray-500 mt-1"></p>
+
+                        <div class="flex gap-2">
+                            <input type="text" id="isbnInput" placeholder="ISBN 13자리 입력" class="input-field flex-1"
+                                onkeydown="if(event.key==='Enter') fetchBook()">
+                            <button onclick="fetchBook()" id="fetchBtn" class="btn-icon flex-shrink-0">
+                                <i class="fa-solid fa-download text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div id="bookDetail" class="hidden mt-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <div class="tag-confirmed mb-2">
+                                <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                                확인됨
+                            </div>
+                            <h4 id="bookTitle" class="font-bold text-slate-800 text-sm leading-snug mt-1"></h4>
+                            <p id="bookMeta" class="text-xs text-slate-400 mt-1"></p>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex-1">
-                        <h3 class="text-sm font-bold text-gray-700 mb-4"><i class="fa-solid fa-layer-group mr-2"></i>생성 채널 선택</h3>
-                        <div class="space-y-2 mb-6">
-                            <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
-                                <input type="checkbox" id="chk_smartstore" value="smartstore" class="w-4 h-4 text-[#00c6ff]" checked>
-                                <span class="text-sm font-medium text-gray-700">스마트스토어 상세페이지</span>
+                    <!-- Channel Select -->
+                    <div class="card p-5 flex-1">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-7 h-7 bg-slate-100 rounded-lg flex items-center justify-center">
+                                <i class="fa-solid fa-layer-group text-slate-500 text-xs"></i>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-700">생성 채널 선택</h3>
+                        </div>
+
+                        <div class="space-y-2 mb-5">
+                            <label class="channel-card">
+                                <input type="checkbox" id="chk_smartstore" value="smartstore" class="w-4 h-4 accent-indigo-500 flex-shrink-0" checked>
+                                <div>
+                                    <span class="text-sm text-slate-700">스마트스토어</span>
+                                    <div class="text-xs text-slate-400">상세페이지 HTML</div>
+                                </div>
                             </label>
-                            <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
-                                <input type="checkbox" id="chk_blog" value="blog" class="w-4 h-4 text-[#00c6ff]" checked>
-                                <span class="text-sm font-medium text-gray-700">네이버 블로그 리뷰글</span>
+                            <label class="channel-card">
+                                <input type="checkbox" id="chk_blog" value="blog" class="w-4 h-4 accent-indigo-500 flex-shrink-0" checked>
+                                <div>
+                                    <span class="text-sm text-slate-700">네이버 블로그</span>
+                                    <div class="text-xs text-slate-400">도서 리뷰글</div>
+                                </div>
                             </label>
-                            <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
-                                <input type="checkbox" id="chk_cafe" value="cafe" class="w-4 h-4 text-[#00c6ff]" checked>
-                                <span class="text-sm font-medium text-gray-700">네이버 카페 추천글</span>
+                            <label class="channel-card">
+                                <input type="checkbox" id="chk_cafe" value="cafe" class="w-4 h-4 accent-indigo-500 flex-shrink-0" checked>
+                                <div>
+                                    <span class="text-sm text-slate-700">네이버 카페</span>
+                                    <div class="text-xs text-slate-400">추천글 포스팅</div>
+                                </div>
                             </label>
                         </div>
-                        <button onclick="generateSelected()" class="w-full bg-[#00c6ff] text-white px-4 py-3 rounded font-bold hover:bg-[#00b0e6] transition shadow text-sm">
+
+                        <button onclick="generateSelected()" id="generateBtn" class="btn-primary w-full py-3">
                             <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>콘텐츠 일괄 생성
                         </button>
                     </div>
                 </div>
 
-                <div class="lg:col-span-8 bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col h-full overflow-hidden">
-                    <div class="flex border-b border-gray-200 bg-gray-50">
-                        <button id="tab-smartstore" onclick="showTab('smartstore')" class="flex-1 py-3 text-sm font-bold border-b-2 border-[#00c6ff] text-[#00c6ff] bg-white">스마트스토어</button>
-                        <button id="tab-blog" onclick="showTab('blog')" class="flex-1 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100">블로그</button>
-                        <button id="tab-cafe" onclick="showTab('cafe')" class="flex-1 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100">카페</button>
+                <!-- Right Panel: Result -->
+                <div class="lg:col-span-8 card flex flex-col overflow-hidden" style="height: calc(100vh - 120px);">
+                    <!-- Tabs -->
+                    <div class="flex border-b border-slate-100 bg-slate-50">
+                        <button id="tab-smartstore" onclick="showTab('smartstore')" class="tab-btn tab-active">스마트스토어</button>
+                        <button id="tab-blog" onclick="showTab('blog')" class="tab-btn">블로그</button>
+                        <button id="tab-cafe" onclick="showTab('cafe')" class="tab-btn">카페</button>
                     </div>
-                    <div class="p-2 border-b border-gray-100 flex justify-end bg-white">
-                        <button onclick="copyContent()" class="border border-gray-300 text-gray-700 bg-white px-3 py-1.5 rounded text-xs hover:bg-gray-50 font-bold shadow-sm">
-                            <i class="fa-regular fa-copy mr-1"></i>현재 탭 복사
+
+                    <!-- Copy bar -->
+                    <div class="flex items-center justify-between px-4 py-2 border-b border-slate-100 bg-white">
+                        <span class="text-xs text-slate-400" id="resultStatus">결과 대기 중</span>
+                        <button onclick="copyContent()" class="btn-secondary px-3 py-1.5">
+                            <i class="fa-regular fa-copy mr-1.5"></i>현재 탭 복사
                         </button>
                     </div>
-                    <div class="flex-1 p-0 relative">
-                        <textarea id="contentResult" class="absolute inset-0 w-full h-full p-5 border-none resize-none text-sm text-gray-700 leading-relaxed focus:outline-none" readonly>왼쪽에서 도서를 검색하고 생성해주세요.</textarea>
+
+                    <!-- Text area -->
+                    <div class="flex-1 relative">
+                        <textarea id="contentResult"
+                            class="absolute inset-0 w-full h-full p-5 border-none resize-none text-sm text-slate-600 leading-relaxed focus:outline-none bg-white"
+                            readonly placeholder="왼쪽에서 도서를 검색하고 생성해주세요."></textarea>
                     </div>
                 </div>
             </div>
 
+            <!-- Page: History -->
             <div id="page-history" class="page-section hidden h-full flex flex-col">
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm flex-1 flex flex-col overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                        <div class="text-sm font-bold text-gray-700">전체 생성 기록 데이터</div>
-                        <button onclick="loadHistoryTable()" class="bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded text-xs hover:bg-gray-100 font-bold">
-                            <i class="fa-solid fa-rotate-right mr-1"></i>새로고침
+                <div class="card flex-1 flex flex-col overflow-hidden">
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800">전체 생성 기록</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">ISBN 기준으로 그룹화된 최신 기록</p>
+                        </div>
+                        <button onclick="loadHistoryTable()" class="btn-secondary px-3 py-2">
+                            <i class="fa-solid fa-rotate-right mr-1.5"></i>새로고침
                         </button>
                     </div>
-                    
-                    <div class="flex-1 overflow-auto p-0">
-                        <table class="w-full text-left text-sm text-gray-600 border-collapse">
-                            <thead class="bg-gray-100 text-gray-700 sticky top-0 shadow-sm text-xs uppercase">
+
+                    <div class="flex-1 overflow-auto">
+                        <table class="data-table w-full text-left border-collapse">
+                            <thead>
                                 <tr>
-                                    <th class="px-6 py-3 font-bold border-b border-gray-200">생성일자</th>
-                                    <th class="px-6 py-3 font-bold border-b border-gray-200">ISBN</th>
-                                    <th class="px-6 py-3 font-bold border-b border-gray-200 w-1/3">도서명</th>
-                                    <th class="px-6 py-3 font-bold border-b border-gray-200 text-center">생성된 채널</th>
-                                    <th class="px-6 py-3 font-bold border-b border-gray-200 text-center">관리</th>
+                                    <th>생성일자</th>
+                                    <th>ISBN</th>
+                                    <th class="w-1/3">도서명</th>
+                                    <th class="text-center">생성 채널</th>
+                                    <th class="text-center">관리</th>
                                 </tr>
                             </thead>
-                            <tbody id="historyTableBody" class="divide-y divide-gray-100">
-                                <tr><td colspan="5" class="text-center py-8 text-gray-400">데이터를 불러오는 중입니다...</td></tr>
+                            <tbody id="historyTableBody" class="divide-y divide-slate-50">
+                                <tr><td colspan="5" class="text-center py-12 text-slate-400 text-sm">
+                                    <i class="fa-solid fa-spinner fa-spin mr-2"></i>데이터를 불러오는 중입니다...
+                                </td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <div id="page-settings" class="page-section hidden h-full">
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-8 max-w-md">
-                    <h3 class="text-lg font-bold text-gray-800 mb-6 border-b pb-3">관리자 암호 변경</h3>
-                    
+            <!-- Page: Settings -->
+            <div id="page-settings" class="page-section hidden">
+                <div class="card p-8 max-w-md">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div class="w-9 h-9 bg-indigo-50 rounded-xl flex items-center justify-center">
+                            <i class="fa-solid fa-key text-indigo-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800">관리자 암호 변경</h3>
+                            <p class="text-xs text-slate-400">새 비밀번호를 설정합니다</p>
+                        </div>
+                    </div>
+
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">현재 암호</label>
-                            <input type="password" id="currentPw" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:border-[#00c6ff] focus:outline-none focus:ring-1 focus:ring-[#00c6ff]">
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">현재 암호</label>
+                            <input type="password" id="currentPw" class="input-field" placeholder="현재 비밀번호">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">새 암호</label>
-                            <input type="password" id="newPw" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:border-[#00c6ff] focus:outline-none focus:ring-1 focus:ring-[#00c6ff]">
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">새 암호</label>
+                            <input type="password" id="newPw" class="input-field" placeholder="새 비밀번호">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">새 암호 확인</label>
-                            <input type="password" id="newPwConfirm" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:border-[#00c6ff] focus:outline-none focus:ring-1 focus:ring-[#00c6ff]">
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">새 암호 확인</label>
+                            <input type="password" id="newPwConfirm" class="input-field" placeholder="비밀번호 재입력">
                         </div>
-                        <div class="pt-4">
-                            <button onclick="changePassword()" class="w-full bg-[#2b303b] text-white px-4 py-2.5 rounded text-sm hover:bg-[#1f232b] font-bold shadow-sm">
-                                암호 변경 적용
+                        <div class="pt-2">
+                            <button onclick="changePassword()" class="btn-primary w-full py-3">
+                                <i class="fa-solid fa-shield-check mr-2"></i>암호 변경 적용
                             </button>
                         </div>
                     </div>
@@ -181,166 +471,191 @@
     </main>
 
     <script>
-        // 전역 변수
         let currentBook = null;
         let results = { smartstore: '', blog: '', cafe: '' };
         let activeTab = 'smartstore';
 
-        // 1. 페이지 전환 로직 (SPA)
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `<i class="fa-solid ${icons[type]}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        // Page switch
         function switchPage(pageId, element) {
-            // 사이드바 메뉴 스타일 변경
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('menu-active'));
             element.classList.add('menu-active');
-
-            // 섹션 숨기기/보이기
             document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('page-' + pageId).classList.remove('hidden');
 
-            // 헤더 타이틀 변경 및 데이터 로드
-            const titleEl = document.getElementById('pageTitle');
-            if (pageId === 'generate') {
-                titleEl.innerHTML = '스마트 도서 콘텐츠 생성';
-            } else if (pageId === 'history') {
-                titleEl.innerHTML = 'DB 기록 모니터링';
-                loadHistoryTable(); // 히스토리 탭 클릭 시 테이블 새로 로드
-            } else if (pageId === 'settings') {
-                titleEl.innerHTML = '관리자 환경 설정';
-            }
+            const breadcrumbs = { generate: '콘텐츠 생성', history: 'DB 기록 모니터링', settings: '관리자 설정' };
+            document.getElementById('breadcrumb').textContent = breadcrumbs[pageId] || pageId;
+
+            if (pageId === 'history') loadHistoryTable();
         }
 
-        // 2. 도서 검색 기능
+        // Fetch book
         async function fetchBook() {
             const isbn = document.getElementById('isbnInput').value.trim();
-            if (!isbn) return alert("ISBN을 입력해주세요.");
-            
-            document.getElementById('contentResult').value = "도서 정보를 불러오는 중입니다...";
-            
+            if (!isbn) return showToast('ISBN을 입력해주세요.', 'error');
+
+            const btn = document.getElementById('fetchBtn');
+            btn.innerHTML = '<div class="spinner"></div>';
+            btn.disabled = true;
+            setResultStatus('도서 정보를 불러오는 중...');
+
             const res = await fetch('/fetch_book', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({isbn})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isbn })
             });
             const result = await res.json();
-            
+
+            btn.innerHTML = '<i class="fa-solid fa-download text-sm"></i>';
+            btn.disabled = false;
+
             if (result.success) {
                 currentBook = result.data;
                 currentBook.isbn = isbn;
-                
+
                 document.getElementById('bookDetail').classList.remove('hidden');
                 document.getElementById('bookTitle').innerText = currentBook.title;
                 document.getElementById('bookMeta').innerText = `${currentBook.author} | ${currentBook.publisher}`;
-                
+
                 results = { smartstore: '', blog: '', cafe: '' };
-                document.getElementById('contentResult').value = "도서 확인 완료. 우측의 채널을 선택하고 생성 버튼을 누르세요.";
+                setResultStatus('도서 확인 완료 — 채널을 선택하고 생성 버튼을 누르세요.');
+                document.getElementById('contentResult').value = '';
+                showToast('도서 정보를 불러왔습니다.', 'success');
             } else {
-                alert(result.message);
-                document.getElementById('contentResult').value = "결과가 없습니다.";
+                showToast(result.message, 'error');
+                setResultStatus('검색 결과 없음');
             }
         }
 
-        // 3. 콘텐츠 일괄 생성
+        // Generate content
         async function generateSelected() {
-            if (!currentBook) return alert("먼저 도서정보를 불러오세요.");
-            
+            if (!currentBook) return showToast('먼저 도서 정보를 불러오세요.', 'error');
+
             const targets = [];
-            if(document.getElementById('chk_smartstore').checked) targets.push('smartstore');
-            if(document.getElementById('chk_blog').checked) targets.push('blog');
-            if(document.getElementById('chk_cafe').checked) targets.push('cafe');
+            if (document.getElementById('chk_smartstore').checked) targets.push('smartstore');
+            if (document.getElementById('chk_blog').checked) targets.push('blog');
+            if (document.getElementById('chk_cafe').checked) targets.push('cafe');
+            if (targets.length === 0) return showToast('생성할 채널을 선택해주세요.', 'error');
 
-            if(targets.length === 0) return alert("생성할 채널을 선택해주세요.");
+            const btn = document.getElementById('generateBtn');
+            btn.innerHTML = '<div class="spinner"></div> AI 생성 중...';
+            btn.disabled = true;
+            setResultStatus(`${targets.length}개 채널 콘텐츠 생성 중... (최대 1~2분 소요)`);
+            document.getElementById('contentResult').value = '';
 
-            document.getElementById('contentResult').value = "AI가 콘텐츠를 작성 중입니다... (최대 1~2분 소요)";
-            
             for (const target of targets) {
                 try {
                     const res = await fetch('/generate', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({book_info: currentBook, target: target})
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ book_info: currentBook, target })
                     });
                     const result = await res.json();
                     results[target] = result.content;
                 } catch (e) {
-                    results[target] = "오류 발생";
+                    results[target] = '오류 발생';
                 }
             }
+
+            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>콘텐츠 일괄 생성';
+            btn.disabled = false;
             showTab(targets[0]);
-            alert("생성이 완료되어 DB에 자동 저장되었습니다.");
+            showToast('생성 완료! DB에 자동 저장되었습니다.', 'success');
         }
 
-        // 4. 생성 결과 탭 전환
+        // Tab switch
         function showTab(target) {
             activeTab = target;
-            document.getElementById('contentResult').value = results[target] || "이 채널에 생성된 내용이 없습니다.";
-            
-            const tabs = ['smartstore', 'blog', 'cafe'];
-            tabs.forEach(t => {
+            const value = results[target];
+            document.getElementById('contentResult').value = value || '';
+            document.getElementById('contentResult').placeholder = value ? '' : '이 채널에 생성된 내용이 없습니다.';
+            setResultStatus(value ? `${tabLabel(target)} 콘텐츠 준비됨` : '결과 없음');
+
+            ['smartstore', 'blog', 'cafe'].forEach(t => {
                 const el = document.getElementById(`tab-${t}`);
-                if (t === target) {
-                    el.className = `flex-1 py-3 text-sm font-bold border-b-2 border-[#00c6ff] text-[#00c6ff] bg-white`;
-                } else {
-                    el.className = `flex-1 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100`;
-                }
+                el.classList.toggle('tab-active', t === target);
             });
         }
 
-        // 5. 복사 기능
-        function copyContent() {
-            const content = document.getElementById('contentResult').value;
-            if (content && !content.includes("왼쪽에서") && !content.includes("이 채널에")) {
-                navigator.clipboard.writeText(content).then(() => alert("복사되었습니다!")).catch(() => alert("직접 복사해주세요."));
-            } else {
-                alert("복사할 내용이 없습니다.");
-            }
+        function tabLabel(t) {
+            return { smartstore: '스마트스토어', blog: '블로그', cafe: '카페' }[t] || t;
         }
 
-        // 6. DB 모니터링 테이블 로드
+        function setResultStatus(msg) {
+            document.getElementById('resultStatus').textContent = msg;
+        }
+
+        // Copy
+        function copyContent() {
+            const content = document.getElementById('contentResult').value;
+            if (!content) return showToast('복사할 내용이 없습니다.', 'error');
+            navigator.clipboard.writeText(content)
+                .then(() => showToast('클립보드에 복사되었습니다.', 'success'))
+                .catch(() => showToast('직접 선택하여 복사해주세요.', 'error'));
+        }
+
+        // History table
         async function loadHistoryTable() {
             const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">데이터 로딩 중...</td></tr>';
-            
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-slate-400 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>데이터 로딩 중...</td></tr>';
+
             try {
                 const res = await fetch('/history_list');
                 const result = await res.json();
-                
+
                 if (result.success && result.data.length > 0) {
                     tbody.innerHTML = result.data.map(item => `
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-xs">${item.date}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-xs font-mono text-gray-500">${item.isbn}</td>
-                            <td class="px-6 py-4 text-sm font-bold text-gray-800 line-clamp-1 truncate max-w-[200px]">${item.title}</td>
-                            <td class="px-6 py-4 text-center">
-                                ${formatTargets(item.targets)}
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <button onclick="loadFromHistory('${item.isbn}')" class="text-[#00c6ff] border border-[#00c6ff] hover:bg-[#e6f9ff] px-3 py-1 rounded text-xs font-bold transition">불러오기</button>
+                        <tr>
+                            <td class="text-slate-400 text-xs whitespace-nowrap">${item.date}</td>
+                            <td class="font-mono text-slate-400 text-xs whitespace-nowrap">${item.isbn}</td>
+                            <td class="font-semibold text-slate-700 truncate max-w-[200px]">${item.title}</td>
+                            <td class="text-center">${formatTargets(item.targets)}</td>
+                            <td class="text-center">
+                                <button onclick="loadFromHistory('${item.isbn}')"
+                                    class="text-xs font-semibold text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition">
+                                    불러오기
+                                </button>
                             </td>
                         </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">저장된 데이터가 없습니다.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-slate-400 text-sm">저장된 데이터가 없습니다.</td></tr>';
                 }
             } catch (e) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-400">오류가 발생했습니다.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-red-400 text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i>오류가 발생했습니다.</td></tr>';
             }
         }
 
-        // 채널 표시 뱃지 헬퍼
         function formatTargets(targetStr) {
-            if(!targetStr) return '-';
-            const map = {'smartstore': '스토어', 'blog': '블로그', 'cafe': '카페'};
+            if (!targetStr) return '-';
+            const map = { smartstore: ['스토어', 'badge-store'], blog: ['블로그', 'badge-blog'], cafe: ['카페', 'badge-cafe'] };
             const arr = [...new Set(targetStr.split(','))];
-            return arr.map(t => `<span class="inline-block bg-gray-100 border border-gray-200 text-gray-600 text-[10px] px-1.5 py-0.5 rounded mr-1">${map[t]||t}</span>`).join('');
+            return arr.map(t => {
+                const [label, cls] = map[t] || [t, ''];
+                return `<span class="badge ${cls} mr-1">${label}</span>`;
+            }).join('');
         }
 
-        // 모니터링 테이블에서 '불러오기' 클릭 시 생성 페이지로 이동하여 데이터 렌더링
         async function loadFromHistory(isbn) {
-            // 사이드바 탭 전환
             const generateTab = document.querySelector('a[onclick*="generate"]');
             switchPage('generate', generateTab);
 
             document.getElementById('isbnInput').value = isbn;
-            document.getElementById('contentResult').value = "DB에서 기록을 불러오는 중입니다...";
+            setResultStatus('DB에서 기록을 불러오는 중...');
 
             const res = await fetch(`/search_history?isbn=${isbn}`);
             const result = await res.json();
@@ -348,34 +663,37 @@
             if (result.success) {
                 results = { smartstore: '', blog: '', cafe: '' };
                 Object.assign(results, result.data);
-                
+
                 document.getElementById('bookDetail').classList.remove('hidden');
-                document.getElementById('bookTitle').innerText = "DB 기존 작업 도서";
+                document.getElementById('bookTitle').innerText = 'DB 기존 작업 도서';
                 document.getElementById('bookMeta').innerText = `ISBN: ${isbn}`;
-                currentBook = { isbn: isbn };
+                currentBook = { isbn };
 
                 showTab(activeTab);
+                showToast('기록을 불러왔습니다.', 'success');
+            } else {
+                showToast('해당 ISBN 기록을 찾을 수 없습니다.', 'error');
             }
         }
 
-        // 7. 암호 변경 
+        // Change password
         async function changePassword() {
             const currentPw = document.getElementById('currentPw').value;
             const newPw = document.getElementById('newPw').value;
             const newPwConfirm = document.getElementById('newPwConfirm').value;
 
-            if(!currentPw || !newPw) return alert("비밀번호를 모두 입력해주세요.");
-            if(newPw !== newPwConfirm) return alert("새 비밀번호가 일치하지 않습니다.");
+            if (!currentPw || !newPw) return showToast('비밀번호를 모두 입력해주세요.', 'error');
+            if (newPw !== newPwConfirm) return showToast('새 비밀번호가 일치하지 않습니다.', 'error');
 
             const res = await fetch('/change_password', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ current_pw: currentPw, new_pw: newPw })
             });
             const result = await res.json();
-            
-            alert(result.message);
-            if(result.success) {
+
+            showToast(result.message, result.success ? 'success' : 'error');
+            if (result.success) {
                 document.getElementById('currentPw').value = '';
                 document.getElementById('newPw').value = '';
                 document.getElementById('newPwConfirm').value = '';
