@@ -3,40 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관리자 로그인 - 도서콘텐츠 관리자</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <title>관리자 로그인 - 도서 툴킷</title>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <link href="[https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;700;800&display=swap](https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;700;800&display=swap)" rel="stylesheet">
     <style>
-        body { font-family: 'Pretendard', sans-serif; background-color: #f4f6f8; }
+        body { font-family: 'Pretendard', sans-serif; background-color: #2b303b; }
     </style>
 </head>
 <body class="h-screen flex items-center justify-center antialiased">
-    <div class="bg-white p-10 md:p-12 rounded-[2rem] shadow-[0_10px_40px_rgba(0,0,0,0.03)] w-full max-w-[420px]">
+    <div class="bg-white p-10 rounded-xl shadow-2xl w-full max-w-[400px]">
         
-        <div class="text-center mb-10">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-[1.25rem] bg-[#03c75a] text-white font-extrabold text-3xl mb-5 shadow-lg shadow-green-200">
-                N
-            </div>
-            <h1 class="text-2xl font-bold text-gray-800">관리자 로그인</h1>
-            <p class="text-gray-500 text-sm mt-2">도서 콘텐츠 자동화 시스템</p>
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-extrabold text-gray-800">도서콘텐츠 관리자</h1>
+            <p class="text-gray-500 text-sm mt-1">Admin Dashboard</p>
         </div>
         
         {% if error %}
-        <div class="bg-red-50 text-red-500 px-4 py-3 rounded-2xl mb-6 text-sm text-center font-medium">
+        <div class="bg-red-50 text-red-500 px-4 py-3 rounded-lg mb-6 text-sm text-center font-bold border border-red-200">
             {{ error }}
         </div>
         {% endif %}
 
-        <form method="POST" action="/login" class="space-y-4">
+        <form method="POST" action="/login" class="space-y-5">
             <div>
-                <input class="w-full bg-gray-50 border-transparent rounded-2xl py-4 px-5 text-gray-800 placeholder-gray-400 focus:bg-white focus:border-[#03c75a] focus:ring-2 focus:ring-green-100 transition-all duration-200" id="username" name="username" type="text" placeholder="아이디를 입력하세요" required>
+                <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">아이디</label>
+                <input class="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-gray-800 focus:bg-white focus:border-[#00c6ff] focus:ring-2 focus:ring-blue-100 transition-all duration-200 outline-none" id="username" name="username" type="text" required>
             </div>
             <div>
-                <input class="w-full bg-gray-50 border-transparent rounded-2xl py-4 px-5 text-gray-800 placeholder-gray-400 focus:bg-white focus:border-[#03c75a] focus:ring-2 focus:ring-green-100 transition-all duration-200" id="password" name="password" type="password" placeholder="비밀번호를 입력하세요" required>
+                <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">비밀번호</label>
+                <input class="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-gray-800 focus:bg-white focus:border-[#00c6ff] focus:ring-2 focus:ring-blue-100 transition-all duration-200 outline-none" id="password" name="password" type="password" required>
             </div>
-            <div class="pt-4">
-                <button class="w-full bg-[#03c75a] hover:bg-[#02b351] hover:-translate-y-0.5 text-white font-bold py-4 px-4 rounded-2xl transition-all duration-200 text-lg shadow-md shadow-green-200" type="submit">
-                    시작하기
+            <div class="pt-2">
+                <button class="w-full bg-[#2b303b] hover:bg-[#1f232b] text-white font-bold py-3.5 px-4 rounded-lg transition-all duration-200 shadow-md" type="submit">
+                    로그인
                 </button>
             </div>
         </form>
