@@ -12,8 +12,9 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "super-secret-key-for-isbn-manager")
 
-ADMIN_ID = os.environ.get("ADMIN_ID", "admin")
-ADMIN_PW = os.environ.get("ADMIN_PW", "1234")
+# 초기 기본 로그인 정보 (DB에 계정이 없을 때 최초 1회 생성용)
+DEFAULT_ADMIN_ID = os.environ.get("ADMIN_ID", "admin")
+DEFAULT_ADMIN_PW = os.environ.get("ADMIN_PW", "1234")
 
 NAVER_CLIENT_ID = os.environ.get("NAVER_CLIENT_ID")
 NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET")
@@ -25,6 +26,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    # 1. 생성 기록 테이블
     c.execute('''CREATE TABLE IF NOT EXISTS history
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   isbn TEXT,
@@ -33,6 +35,18 @@ def init_db():
                   content TEXT,
                   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                   UNIQUE(isbn, target))''')
+    
+    # 2. 관리자 계정 테이블 (비밀번호 변경 기능용)
+    c.execute('''CREATE TABLE IF NOT EXISTS admin_users
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  username TEXT UNIQUE,
+                  password TEXT)''')
+    
+    # 관리자 계정이 비어있다면 기본 계정 생성
+    c.execute("SELECT * FROM admin_users WHERE username = ?", (DEFAULT_ADMIN_ID,))
+    if not c.fetchone():
+        c.execute("INSERT INTO admin_users (username, password) VALUES (?, ?)", (DEFAULT_ADMIN_ID, DEFAULT_ADMIN_PW))
+        
     conn.commit()
     conn.close()
 
@@ -67,8 +81,16 @@ def login():
         user_id = request.form.get('username')
         user_pw = request.form.get('password')
         
-        if user_id == ADMIN_ID and user_pw == ADMIN_PW:
+        # DB에서 계정 정보 확인
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("SELECT * FROM admin_users WHERE username = ? AND password = ?", (user_id, user_pw))
+        admin = c.fetchone()
+        conn.close()
+        
+        if admin:
             session['logged_in'] = True
+            session['username'] = user_id
             return redirect(url_for('index'))
         else:
             return render_template('login.html', error="아이디 또는 비밀번호가 일치하지 않습니다.")
@@ -77,12 +99,35 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
+    session.pop('username', None)
     return redirect(url_for('login'))
 
 @app.route('/')
 @login_required
 def index():
-    return render_template('index.html')
+    return render_template('index.html', username=session.get('username'))
+
+@app.route('/change_password', methods=['POST'])
+@login_required
+def change_password():
+    data = request.json
+    current_pw = data.get('current_pw')
+    new_pw = data.get('new_pw')
+    username = session.get('username')
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT * FROM admin_users WHERE username = ? AND password = ?", (username, current_pw))
+    admin = c.fetchone()
+
+    if admin:
+        c.execute("UPDATE admin_users SET password = ? WHERE username = ?", (new_pw, username))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "비밀번호가 성공적으로 변경되었습니다."})
+    else:
+        conn.close()
+        return jsonify({"success": False, "message": "현재 비밀번호가 일치하지 않습니다."})
 
 def get_book_info(isbn):
     url = f"https://openapi.naver.com/v1/search/book.json?query={isbn}&display=1"
@@ -168,7 +213,6 @@ def search_history():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
-# --- 새로 추가된 부분: 좌측 목록에 띄울 전체 기록 가져오기 ---
 @app.route('/history_list', methods=['GET'])
 @login_required
 def history_list():
@@ -176,12 +220,24 @@ def history_list():
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
-        # 최근에 생성/업데이트된 순서대로 고유 ISBN 목록 추출
-        c.execute("SELECT isbn, title, MAX(created_at) as last_date FROM history GROUP BY isbn ORDER BY last_date DESC")
+        # ISBN을 기준으로 그룹화하여 최신 기록을 가져옵니다
+        c.execute("""
+            SELECT isbn, title, MAX(created_at) as last_date, GROUP_CONCAT(target) as targets 
+            FROM history 
+            GROUP BY isbn 
+            ORDER BY last_date DESC
+        """)
         rows = c.fetchall()
         conn.close()
         
-        data = [{"isbn": row['isbn'], "title": row['title'], "date": row['last_date'][:10]} for row in rows]
+        data = []
+        for row in rows:
+            data.append({
+                "isbn": row['isbn'], 
+                "title": row['title'], 
+                "date": row['last_date'][:10],
+                "targets": row['targets']
+            })
         return jsonify({"success": True, "data": data})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
