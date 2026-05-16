@@ -10,14 +10,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-# 세션 유지를 위한 시크릿 키 (레일웨이 환경변수에 설정 권장)
 app.secret_key = os.environ.get("SECRET_KEY", "super-secret-key-for-isbn-manager")
 
-# 관리자 로그인 정보 (레일웨이 환경변수에서 가져오거나 기본값 사용)
 ADMIN_ID = os.environ.get("ADMIN_ID", "admin")
 ADMIN_PW = os.environ.get("ADMIN_PW", "1234")
 
-# API 키 및 DB 경로 설정
 NAVER_CLIENT_ID = os.environ.get("NAVER_CLIENT_ID")
 NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -26,10 +23,8 @@ DB_PATH = os.environ.get("DB_PATH", "database.db")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 def init_db():
-    """작업 내역을 저장할 DB를 초기화합니다."""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    # isbn과 target 조합을 고유값으로 설정하여 덮어쓰기가 가능하도록 구성
     c.execute('''CREATE TABLE IF NOT EXISTS history
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   isbn TEXT,
@@ -44,7 +39,6 @@ def init_db():
 init_db()
 
 def save_history(isbn, title, target, content):
-    """생성된 콘텐츠를 DB에 저장하거나 기존 기록을 업데이트합니다."""
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
@@ -59,7 +53,6 @@ def save_history(isbn, title, target, content):
     except Exception as e:
         print(f"DB 저장 오류 발생: {e}")
 
-# 로그인 확인 데코레이터
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -159,7 +152,6 @@ def generate():
 @app.route('/search_history', methods=['GET'])
 @login_required
 def search_history():
-    """DB에서 ISBN으로 기존에 생성된 콘텐츠를 검색합니다."""
     isbn = request.args.get('isbn')
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -173,6 +165,24 @@ def search_history():
             data = {row['target']: row['content'] for row in rows}
             return jsonify({"success": True, "data": data})
         return jsonify({"success": False, "message": "해당 ISBN으로 생성된 기록이 없습니다."})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+# --- 새로 추가된 부분: 좌측 목록에 띄울 전체 기록 가져오기 ---
+@app.route('/history_list', methods=['GET'])
+@login_required
+def history_list():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        # 최근에 생성/업데이트된 순서대로 고유 ISBN 목록 추출
+        c.execute("SELECT isbn, title, MAX(created_at) as last_date FROM history GROUP BY isbn ORDER BY last_date DESC")
+        rows = c.fetchall()
+        conn.close()
+        
+        data = [{"isbn": row['isbn'], "title": row['title'], "date": row['last_date'][:10]} for row in rows]
+        return jsonify({"success": True, "data": data})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
