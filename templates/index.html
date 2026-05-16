@@ -4,74 +4,95 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>도서 콘텐츠 통합 관리자</title>
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background-color: #f4f6f8; color: #333; }
+        textarea::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track { background: transparent; }
+        textarea::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        textarea::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <nav class="bg-blue-800 text-white p-4 shadow-md flex justify-between items-center">
-        <h1 class="text-xl font-bold">ISBN 도서 콘텐츠 통합 관리자</h1>
-        <a href="/logout" class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded text-sm transition">로그아웃</a>
+<body class="min-h-screen antialiased">
+    
+    <nav class="bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-[#03c75a] text-white flex items-center justify-center font-bold text-lg">N</div>
+            <h1 class="text-xl font-bold text-gray-800">도서 콘텐츠 관리자</h1>
+        </div>
+        <a href="/logout" class="text-sm text-gray-500 font-medium bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full transition-colors">로그아웃</a>
     </nav>
 
-    <div class="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+    <div class="max-w-7xl mx-auto p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 mt-2">
         
-        <div class="md:col-span-4 space-y-6">
+        <div class="lg:col-span-4 space-y-6">
             
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-lg font-bold mb-4 text-gray-800">1. 도서 검색 및 내역 불러오기</h2>
-                <div class="space-y-3">
-                    <input type="text" id="isbnInput" placeholder="ISBN 13자리 입력" class="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <div class="bg-white p-7 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50">
+                <h2 class="text-lg font-bold mb-5 text-gray-800">1. 도서 검색</h2>
+                <div class="space-y-4">
+                    <input type="text" id="isbnInput" placeholder="ISBN 13자리 입력" class="w-full bg-gray-50 border-transparent p-4 rounded-2xl focus:bg-white focus:border-[#03c75a] focus:ring-2 focus:ring-green-100 transition-all text-gray-800 placeholder-gray-400 outline-none">
                     <div class="flex gap-2">
-                        <button onclick="fetchBook()" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition text-sm">새로 도서정보 불러오기</button>
-                        <button onclick="searchHistory()" class="flex-1 bg-gray-600 text-white py-2 rounded hover:bg-gray-700 transition text-sm">기존 DB에서 찾기</button>
+                        <button onclick="fetchBook()" class="flex-1 bg-[#f0fdf4] text-[#03c75a] py-3.5 rounded-2xl hover:bg-[#dcfce7] transition-colors text-sm font-bold">새로 불러오기</button>
+                        <button onclick="searchHistory()" class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-2xl hover:bg-gray-200 transition-colors text-sm font-bold">기존 DB 찾기</button>
                     </div>
                 </div>
             </div>
 
-            <div id="bookDetail" class="hidden bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
-                <h2 class="text-sm text-blue-600 font-bold mb-1">도서 확인됨</h2>
-                <h3 id="bookTitle" class="text-lg font-bold text-gray-800"></h3>
-                <p id="bookMeta" class="text-sm text-gray-600 mt-1"></p>
-                <div id="dbBadge" class="hidden mt-3 inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">DB 기록 있음</div>
+            <div id="bookDetail" class="hidden bg-white p-7 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-[#03c75a]/20 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#03c75a] to-[#2bdc7c]"></div>
+                <div class="flex items-center gap-2 mb-2 mt-1">
+                    <span class="flex w-2 h-2 bg-[#03c75a] rounded-full"></span>
+                    <h2 class="text-sm text-[#03c75a] font-bold">도서 확인됨</h2>
+                </div>
+                <h3 id="bookTitle" class="text-xl font-bold text-gray-800 leading-snug mt-1"></h3>
+                <p id="bookMeta" class="text-sm text-gray-500 mt-2"></p>
+                <div id="dbBadge" class="hidden mt-4 inline-flex bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-full">DB 기록 있음</div>
             </div>
 
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-lg font-bold mb-4 text-gray-800">2. 생성할 채널 선택</h2>
+            <div class="bg-white p-7 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50">
+                <h2 class="text-lg font-bold mb-5 text-gray-800">2. 생성 옵션</h2>
                 <div class="space-y-3 mb-6">
-                    <label class="flex items-center space-x-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                        <input type="checkbox" id="chk_smartstore" value="smartstore" class="w-5 h-5 text-blue-600" checked>
-                        <span class="text-gray-700">스마트스토어 상세페이지</span>
+                    <label class="flex items-center p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" id="chk_smartstore" value="smartstore" class="w-5 h-5 accent-[#03c75a] rounded focus:ring-0 cursor-pointer" checked>
+                        <span class="ml-3 text-gray-700 font-medium">스마트스토어 상세페이지</span>
                     </label>
-                    <label class="flex items-center space-x-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                        <input type="checkbox" id="chk_blog" value="blog" class="w-5 h-5 text-blue-600" checked>
-                        <span class="text-gray-700">네이버 블로그 리뷰글</span>
+                    <label class="flex items-center p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" id="chk_blog" value="blog" class="w-5 h-5 accent-[#03c75a] rounded focus:ring-0 cursor-pointer" checked>
+                        <span class="ml-3 text-gray-700 font-medium">블로그 리뷰글</span>
                     </label>
-                    <label class="flex items-center space-x-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                        <input type="checkbox" id="chk_cafe" value="cafe" class="w-5 h-5 text-blue-600" checked>
-                        <span class="text-gray-700">네이버 카페 추천글</span>
+                    <label class="flex items-center p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" id="chk_cafe" value="cafe" class="w-5 h-5 accent-[#03c75a] rounded focus:ring-0 cursor-pointer" checked>
+                        <span class="ml-3 text-gray-700 font-medium">카페 추천글</span>
                     </label>
                 </div>
-                <button onclick="generateSelected()" class="w-full bg-green-600 text-white px-6 py-3 rounded font-bold hover:bg-green-700 transition shadow-lg">선택한 채널 생성하기 (자동 저장)</button>
+                <button onclick="generateSelected()" class="w-full bg-[#03c75a] text-white px-6 py-4 rounded-2xl font-bold hover:bg-[#02b351] hover:-translate-y-0.5 transition-all shadow-md shadow-green-200/50 text-base">콘텐츠 자동 생성</button>
             </div>
 
         </div>
 
-        <div class="md:col-span-8 bg-white p-6 rounded-lg shadow-md flex flex-col h-full">
-            <h2 class="text-lg font-bold mb-4 text-gray-800 flex justify-between items-center">
-                <span>3. 결과물 확인</span>
-                <button onclick="copyContent()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-700 transition">현재 탭 복사하기</button>
-            </h2>
+        <div class="lg:col-span-8 flex flex-col h-full space-y-6">
             
-            <div class="border-b border-gray-200 mb-4">
-                <ul class="flex text-sm font-medium text-center">
-                    <li class="mr-2"><button id="tab-smartstore" onclick="showTab('smartstore')" class="p-3 border-b-2 border-blue-600 text-blue-600">스마트스토어</button></li>
-                    <li class="mr-2"><button id="tab-blog" onclick="showTab('blog')" class="p-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700">블로그</button></li>
-                    <li><button id="tab-cafe" onclick="showTab('cafe')" class="p-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700">카페</button></li>
-                </ul>
-            </div>
+            <div class="bg-white p-7 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50 flex flex-col h-full">
+                
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-gray-800">3. 결과물 확인</h2>
+                    <button onclick="copyContent()" class="bg-gray-800 text-white px-5 py-2.5 rounded-full text-sm hover:bg-gray-700 transition-colors font-medium flex items-center gap-2 shadow-sm">
+                        복사하기
+                    </button>
+                </div>
+                
+                <div class="bg-gray-100 p-1.5 rounded-2xl flex space-x-1 mb-6">
+                    <button id="tab-smartstore" onclick="showTab('smartstore')" class="flex-1 py-3 rounded-xl bg-white shadow-sm text-[#03c75a] font-bold text-sm transition-all">스마트스토어</button>
+                    <button id="tab-blog" onclick="showTab('blog')" class="flex-1 py-3 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-50 font-medium text-sm transition-all">블로그</button>
+                    <button id="tab-cafe" onclick="showTab('cafe')" class="flex-1 py-3 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-50 font-medium text-sm transition-all">카페</button>
+                </div>
 
-            <div class="relative flex-grow">
-                <textarea id="contentResult" class="w-full h-[500px] p-4 border rounded bg-gray-50 text-gray-800 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none" readonly>좌측에서 도서를 검색하고 생성 버튼을 눌러주세요.</textarea>
+                <div class="flex-grow">
+                    <textarea id="contentResult" class="w-full h-[550px] p-6 bg-gray-50 border-none rounded-2xl text-gray-700 text-sm focus:ring-2 focus:ring-[#03c75a]/20 transition-all resize-none leading-relaxed outline-none" readonly>좌측에서 도서를 검색하고 생성 버튼을 눌러주세요.</textarea>
+                </div>
             </div>
+            
         </div>
 
     </div>
@@ -81,7 +102,6 @@
         let results = { smartstore: '', blog: '', cafe: '' };
         let activeTab = 'smartstore';
 
-        // 1. 도서 정보 불러오기 (네이버 API)
         async function fetchBook() {
             const isbn = document.getElementById('isbnInput').value.trim();
             if (!isbn) return alert("ISBN을 입력해주세요.");
@@ -97,19 +117,18 @@
             
             if (result.success) {
                 currentBook = result.data;
-                currentBook.isbn = isbn; // 입력한 ISBN 유지
+                currentBook.isbn = isbn;
                 displayBookInfo(currentBook);
                 
                 results = { smartstore: '', blog: '', cafe: '' };
                 document.getElementById('dbBadge').classList.add('hidden');
-                document.getElementById('contentResult').value = "도서 확인 완료. [선택한 채널 생성하기] 버튼을 눌러주세요.";
+                document.getElementById('contentResult').value = "도서 확인 완료. [콘텐츠 자동 생성] 버튼을 눌러주세요.";
             } else {
                 alert(result.message);
                 document.getElementById('contentResult').value = "결과가 없습니다.";
             }
         }
 
-        // 2. DB에서 기존 기록 불러오기
         async function searchHistory() {
             const isbn = document.getElementById('isbnInput').value.trim();
             if (!isbn) return alert("검색할 ISBN을 입력해주세요.");
@@ -120,7 +139,6 @@
             const result = await res.json();
 
             if (result.success) {
-                // 기록이 있으면 도서정보는 임시로 표시하고 결과창에 데이터를 띄웁니다.
                 results = { smartstore: '', blog: '', cafe: '' };
                 Object.assign(results, result.data);
                 
@@ -129,28 +147,24 @@
                 document.getElementById('bookMeta').innerText = `ISBN: ${isbn}`;
                 document.getElementById('dbBadge').classList.remove('hidden');
                 
-                currentBook = { isbn: isbn }; // 임시 객체
+                currentBook = { isbn: isbn };
 
-                showTab(activeTab); // 현재 탭 내용 즉시 표시
-                alert("과거 생성 기록을 성공적으로 불러왔습니다.");
+                showTab(activeTab);
             } else {
                 alert(result.message);
                 document.getElementById('contentResult').value = "DB에 해당 ISBN의 기록이 없습니다.";
             }
         }
 
-        // 도서 정보 UI 업데이트 함수
         function displayBookInfo(book) {
             document.getElementById('bookDetail').classList.remove('hidden');
             document.getElementById('bookTitle').innerText = book.title;
             document.getElementById('bookMeta').innerText = `${book.author} | ${book.publisher}`;
         }
 
-        // 3. 선택한 채널만 생성하기
         async function generateSelected() {
             if (!currentBook) return alert("먼저 도서정보를 불러오거나 검색해주세요.");
             
-            // 체크박스 확인
             const targets = [];
             if(document.getElementById('chk_smartstore').checked) targets.push('smartstore');
             if(document.getElementById('chk_blog').checked) targets.push('blog');
@@ -158,7 +172,7 @@
 
             if(targets.length === 0) return alert("생성할 채널을 하나 이상 선택해주세요.");
 
-            document.getElementById('contentResult').value = "AI가 콘텐츠를 작성 중입니다... (선택한 채널 수에 따라 시간이 걸릴 수 있습니다)";
+            document.getElementById('contentResult').value = "AI가 콘텐츠를 작성 중입니다... \n(선택한 채널 수에 따라 시간이 걸릴 수 있습니다)";
             
             for (const target of targets) {
                 try {
@@ -174,12 +188,10 @@
                 }
             }
             
-            // 생성 완료 후 첫 번째로 선택했던 탭 보여주기
             showTab(targets[0]);
-            alert("선택한 채널의 콘텐츠 생성이 완료되었으며 DB에 자동 저장되었습니다!");
         }
 
-        // 탭 전환 로직
+        // 알약(Pill) 스타일 탭 전환 애니메이션
         function showTab(target) {
             activeTab = target;
             document.getElementById('contentResult').value = results[target] || "아직 이 채널에 대해 생성된 내용이 없습니다.";
@@ -188,23 +200,20 @@
             tabs.forEach(t => {
                 const el = document.getElementById(`tab-${t}`);
                 if (t === target) {
-                    el.classList.add('border-blue-600', 'text-blue-600');
-                    el.classList.remove('border-transparent', 'text-gray-500');
+                    el.className = `flex-1 py-3 rounded-xl bg-white shadow-sm text-[#03c75a] font-bold text-sm transition-all`;
                 } else {
-                    el.classList.remove('border-blue-600', 'text-blue-600');
-                    el.classList.add('border-transparent', 'text-gray-500');
+                    el.className = `flex-1 py-3 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-50 font-medium text-sm transition-all`;
                 }
             });
         }
 
-        // 복사 로직
         function copyContent() {
             const content = document.getElementById('contentResult').value;
-            if (content && !content.includes("결과가 여기에 표시됩니다") && !content.includes("생성된 내용이 없습니다")) {
+            if (content && !content.includes("결과가 여기에 표시됩니다") && !content.includes("생성된 내용이 없습니다") && !content.includes("AI가 콘텐츠를")) {
                 navigator.clipboard.writeText(content).then(() => {
-                    alert("복사되었습니다! 필요한 곳에 붙여넣기 하세요.");
+                    alert("성공적으로 복사되었습니다!");
                 }).catch(err => {
-                    alert("복사 기능이 지원되지 않는 브라우저입니다. 창 안의 텍스트를 직접 복사해주세요.");
+                    alert("복사 기능이 지원되지 않는 브라우저입니다.");
                 });
             } else {
                 alert("복사할 내용이 없습니다.");
