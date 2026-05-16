@@ -430,7 +430,7 @@
                                     <th>ISBN</th>
                                     <th class="w-1/3">도서명</th>
                                     <th class="text-center">생성 채널</th>
-                                    <th class="text-center">관리</th>
+                                    <th class="text-center" style="width:140px;">관리</th>
                                 </tr>
                             </thead>
                             <tbody id="historyTableBody" class="divide-y divide-slate-50">
@@ -480,6 +480,41 @@
 
         </div>
     </main>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeEditModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col" style="max-height: 85vh;">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800">콘텐츠 수정</h3>
+                    <p id="editModalMeta" class="text-xs text-slate-400 mt-0.5"></p>
+                </div>
+                <button onclick="closeEditModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="flex border-b border-slate-100 bg-slate-50">
+                <button id="etab-smartstore" onclick="switchEditTab('smartstore')" class="tab-btn tab-active">스마트스토어</button>
+                <button id="etab-blog" onclick="switchEditTab('blog')" class="tab-btn">블로그</button>
+                <button id="etab-cafe" onclick="switchEditTab('cafe')" class="tab-btn">카페</button>
+            </div>
+
+            <div class="flex-1 overflow-hidden relative" style="min-height:300px;">
+                <textarea id="editContent"
+                    class="absolute inset-0 w-full h-full p-5 border-none resize-none text-sm text-slate-600 leading-relaxed focus:outline-none bg-white"
+                    placeholder="이 채널에 저장된 콘텐츠가 없습니다."></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-slate-100">
+                <button onclick="closeEditModal()" class="btn-secondary px-4 py-2">취소</button>
+                <button onclick="saveEdit()" id="editSaveBtn" class="btn-primary px-5 py-2">
+                    <i class="fa-solid fa-floppy-disk mr-1.5"></i>저장
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let currentBook = null;
@@ -637,10 +672,20 @@
                             <td class="font-semibold text-slate-700 truncate max-w-[200px]">${item.title}</td>
                             <td class="text-center">${formatTargets(item.targets)}</td>
                             <td class="text-center">
-                                <button onclick="loadFromHistory('${item.isbn}')"
-                                    class="text-xs font-semibold text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition">
-                                    불러오기
-                                </button>
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <button onclick="loadFromHistory('${item.isbn}')"
+                                        class="text-xs font-semibold text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition">
+                                        불러오기
+                                    </button>
+                                    <button onclick="openEditModal('${item.isbn}', \`${item.title.replace(/`/g, '\\`')}\`)"
+                                        class="text-xs font-semibold text-slate-600 border border-slate-200 bg-slate-50 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition">
+                                        <i class="fa-solid fa-pen text-[10px]"></i>
+                                    </button>
+                                    <button onclick="deleteHistory('${item.isbn}', this)"
+                                        class="text-xs font-semibold text-red-500 border border-red-100 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition">
+                                        <i class="fa-solid fa-trash text-[10px]"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `).join('') + `<tr id="historyNoResult" style="display:none"><td colspan="5" class="text-center py-12 text-slate-400 text-sm"><i class="fa-solid fa-magnifying-glass mr-2"></i>검색 결과가 없습니다.</td></tr>`;
@@ -699,6 +744,90 @@
                 const [label, cls] = map[t] || [t, ''];
                 return `<span class="badge ${cls} mr-1">${label}</span>`;
             }).join('');
+        }
+
+        // Delete history
+        async function deleteHistory(isbn, btn) {
+            if (!confirm(`ISBN ${isbn} 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+            const row = btn.closest('tr');
+            row.style.opacity = '0.4';
+            const res = await fetch(`/delete_history?isbn=${isbn}`, { method: 'DELETE' });
+            const result = await res.json();
+            if (result.success) {
+                row.remove();
+                allHistoryData = allHistoryData.filter(d => d.isbn !== isbn);
+                const remaining = document.querySelectorAll('#historyTableBody tr[data-isbn]').length;
+                updateHistoryCount(remaining, allHistoryData.length);
+                showToast('기록이 삭제되었습니다.', 'success');
+            } else {
+                row.style.opacity = '1';
+                showToast('삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // Edit modal
+        let editIsbn = null;
+        let editTab = 'smartstore';
+        let editData = { smartstore: '', blog: '', cafe: '' };
+
+        async function openEditModal(isbn, title) {
+            editIsbn = isbn;
+            editData = { smartstore: '', blog: '', cafe: '' };
+            document.getElementById('editModalMeta').textContent = `${title} · ISBN: ${isbn}`;
+            document.getElementById('editContent').value = '';
+            document.getElementById('editContent').placeholder = '불러오는 중...';
+            document.getElementById('editModal').classList.remove('hidden');
+
+            const res = await fetch(`/search_history?isbn=${isbn}`);
+            const result = await res.json();
+            if (result.success) Object.assign(editData, result.data);
+
+            switchEditTab('smartstore');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            editIsbn = null;
+        }
+
+        function switchEditTab(tab) {
+            editData[editTab] = document.getElementById('editContent').value;
+            editTab = tab;
+            const val = editData[tab];
+            document.getElementById('editContent').value = val || '';
+            document.getElementById('editContent').placeholder = val ? '' : '이 채널에 저장된 콘텐츠가 없습니다.';
+            ['smartstore', 'blog', 'cafe'].forEach(t => {
+                document.getElementById(`etab-${t}`).classList.toggle('tab-active', t === tab);
+            });
+        }
+
+        async function saveEdit() {
+            editData[editTab] = document.getElementById('editContent').value;
+            const btn = document.getElementById('editSaveBtn');
+            btn.innerHTML = '<div class="spinner"></div> 저장 중...';
+            btn.disabled = true;
+
+            const targets = Object.keys(editData).filter(t => editData[t].trim());
+            let ok = true;
+            for (const target of targets) {
+                const res = await fetch('/update_history', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isbn: editIsbn, target, content: editData[target] })
+                });
+                const result = await res.json();
+                if (!result.success) { ok = false; break; }
+            }
+
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk mr-1.5"></i>저장';
+            btn.disabled = false;
+
+            if (ok) {
+                showToast('수정 내용이 저장되었습니다.', 'success');
+                closeEditModal();
+            } else {
+                showToast('저장 중 오류가 발생했습니다.', 'error');
+            }
         }
 
         async function loadFromHistory(isbn) {

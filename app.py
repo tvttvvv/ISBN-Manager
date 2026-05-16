@@ -242,6 +242,38 @@ def history_list():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
+@app.route('/delete_history', methods=['DELETE'])
+@login_required
+def delete_history():
+    isbn = request.args.get('isbn')
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("DELETE FROM history WHERE isbn = ?", (isbn,))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/update_history', methods=['PUT'])
+@login_required
+def update_history():
+    data = request.json
+    isbn = data.get('isbn')
+    target = data.get('target')
+    content = data.get('content')
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("UPDATE history SET content = ?, created_at = CURRENT_TIMESTAMP WHERE isbn = ? AND target = ?",
+                  (content, isbn, target))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
