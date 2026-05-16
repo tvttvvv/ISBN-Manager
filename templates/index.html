@@ -404,11 +404,22 @@
                     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                         <div>
                             <h3 class="text-sm font-bold text-slate-800">전체 생성 기록</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">ISBN 기준으로 그룹화된 최신 기록</p>
+                            <p class="text-xs text-slate-400 mt-0.5" id="historyCount">ISBN 기준으로 그룹화된 최신 기록</p>
                         </div>
                         <button onclick="loadHistoryTable()" class="btn-secondary px-3 py-2">
                             <i class="fa-solid fa-rotate-right mr-1.5"></i>새로고침
                         </button>
+                    </div>
+
+                    <div class="px-6 py-3 border-b border-slate-100 bg-white">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="historySearch" placeholder="도서명 또는 ISBN으로 검색..." class="input-field pl-8 text-xs py-2"
+                                oninput="filterHistory(this.value)">
+                            <button id="historyClearBtn" onclick="clearHistorySearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                <i class="fa-solid fa-circle-xmark text-xs"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="flex-1 overflow-auto">
@@ -618,8 +629,9 @@
                 const result = await res.json();
 
                 if (result.success && result.data.length > 0) {
+                    allHistoryData = result.data;
                     tbody.innerHTML = result.data.map(item => `
-                        <tr>
+                        <tr data-isbn="${item.isbn}" data-title="${item.title.replace(/"/g, '&quot;')}">
                             <td class="text-slate-400 text-xs whitespace-nowrap">${item.date}</td>
                             <td class="font-mono text-slate-400 text-xs whitespace-nowrap">${item.isbn}</td>
                             <td class="font-semibold text-slate-700 truncate max-w-[200px]">${item.title}</td>
@@ -631,13 +643,52 @@
                                 </button>
                             </td>
                         </tr>
-                    `).join('');
+                    `).join('') + `<tr id="historyNoResult" style="display:none"><td colspan="5" class="text-center py-12 text-slate-400 text-sm"><i class="fa-solid fa-magnifying-glass mr-2"></i>검색 결과가 없습니다.</td></tr>`;
+                    updateHistoryCount(result.data.length, result.data.length);
+                    const q = document.getElementById('historySearch')?.value || '';
+                    if (q) filterHistory(q);
                 } else {
+                    allHistoryData = [];
                     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-slate-400 text-sm">저장된 데이터가 없습니다.</td></tr>';
+                    document.getElementById('historyCount').textContent = '총 0건';
                 }
             } catch (e) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-red-400 text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i>오류가 발생했습니다.</td></tr>';
             }
+        }
+
+        let allHistoryData = [];
+
+        function filterHistory(query) {
+            const q = query.trim().toLowerCase();
+            document.getElementById('historyClearBtn').classList.toggle('hidden', !q);
+
+            const rows = document.querySelectorAll('#historyTableBody tr[data-isbn]');
+            let visible = 0;
+            rows.forEach(row => {
+                const isbn = row.dataset.isbn.toLowerCase();
+                const title = row.dataset.title.toLowerCase();
+                const match = !q || isbn.includes(q) || title.includes(q);
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+
+            const noResult = document.getElementById('historyNoResult');
+            if (noResult) noResult.style.display = visible === 0 ? '' : 'none';
+            updateHistoryCount(visible, allHistoryData.length);
+        }
+
+        function clearHistorySearch() {
+            document.getElementById('historySearch').value = '';
+            filterHistory('');
+        }
+
+        function updateHistoryCount(visible, total) {
+            const el = document.getElementById('historyCount');
+            if (!el) return;
+            el.textContent = visible === total
+                ? `총 ${total}건`
+                : `${total}건 중 ${visible}건 표시`;
         }
 
         function formatTargets(targetStr) {
